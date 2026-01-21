@@ -1,5 +1,12 @@
 package com.project.back_end.models;
 
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Future;
+import jakarta.validation.constraints.NotNull;
+
+import java.time.LocalDateTime;
+
+@Entity
 public class Appointment {
 
   // @Entity annotation:
@@ -12,6 +19,9 @@ public class Appointment {
 //      - Represents the unique identifier for each appointment.
 //      - The @Id annotation marks it as the primary key.
 //      - The @GeneratedValue(strategy = GenerationType.IDENTITY) annotation auto-generates the ID value when a new record is inserted into the database.
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
 // 2. 'doctor' field:
 //    - Type: private Doctor
@@ -19,6 +29,9 @@ public class Appointment {
 //      - Represents the doctor assigned to this appointment.
 //      - The @ManyToOne annotation defines the relationship, indicating many appointments can be linked to one doctor.
 //      - The @NotNull annotation ensures that an appointment must be associated with a doctor when created.
+    @ManyToOne
+    @NotNull
+    private Doctor doctor;
 
 // 3. 'patient' field:
 //    - Type: private Patient
@@ -26,6 +39,9 @@ public class Appointment {
 //      - Represents the patient assigned to this appointment.
 //      - The @ManyToOne annotation defines the relationship, indicating many appointments can be linked to one patient.
 //      - The @NotNull annotation ensures that an appointment must be associated with a patient when created.
+    @ManyToOne
+    @NotNull
+    private Patient patient;
 
 // 4. 'appointmentTime' field:
 //    - Type: private LocalDateTime
@@ -33,6 +49,8 @@ public class Appointment {
 //      - Represents the date and time when the appointment is scheduled to occur.
 //      - The @Future annotation ensures that the appointment time is always in the future when the appointment is created.
 //      - It uses LocalDateTime, which includes both the date and time for the appointment.
+    @Future
+    private LocalDateTime appointmentTime;
 
 // 5. 'status' field:
 //    - Type: private int
@@ -41,6 +59,7 @@ public class Appointment {
 //        - 0 means the appointment is scheduled.
 //        - 1 means the appointment has been completed.
 //      - The @NotNull annotation ensures that the status field is not null.
+    private int status; // 0 = Scheduled, 1 = Completed
 
 // 6. 'getEndTime' method:
 //    - Type: private LocalDateTime
@@ -48,6 +67,10 @@ public class Appointment {
 //      - This method is a transient field (not persisted in the database).
 //      - It calculates the end time of the appointment by adding one hour to the start time (appointmentTime).
 //      - It is used to get an estimated appointment end time for display purposes.
+    @Transient
+    public LocalDateTime getEndTime() {
+        return appointmentTime.plusHours(1);
+    }
 
 // 7. 'getAppointmentDate' method:
 //    - Type: private LocalDate
