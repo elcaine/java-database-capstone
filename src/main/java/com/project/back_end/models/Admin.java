@@ -58,8 +58,8 @@ public class Admin {
 //    - Standard getter and setter methods are provided for accessing and modifying the fields.
 
 
-    public void setUsername(String username) { this.username = username;}
     public void setPassword(String password) { this.password = password; }
+    public void setUsername(String username) { this.username = username;}
     public Long getId() { return id; }
     public String getUsername() { return username; }
     public String getPassword() { return password; }

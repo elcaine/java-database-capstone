@@ -49,12 +49,14 @@ public class Prescription {
     @Size(min = 3, max = 100)
     private String medication;
 
-    //TODO???????????????????????????????????????????????????
 // 5. 'dosage' field:
 //    - Type: private String
 //    - Description:
 //      - Represents the dosage information for the prescribed medication.
 //      - The @NotNull annotation ensures that the dosage information is provided.
+    @NotNull
+    @Size(min = 3, max = 20)
+    private String dosage;
 
 // 6. 'doctorNotes' field:
 //    - Type: private String
@@ -67,10 +69,11 @@ public class Prescription {
 // 7. Constructors:
 //    - The class includes a no-argument constructor (default constructor) and a parameterized constructor that initializes the fields: patientName, medication, dosage, doctorNotes, and appointmentId.
     public Prescription() {}
-    public Prescription(String patientName, Long appointmentId, String medication, String doctorNotes) {
+    public Prescription(String patientName, Long appointmentId, String medication, String dosage, String doctorNotes) {
         this.patientName = patientName;
         this.appointmentId = appointmentId;
         this.medication = medication;
+        this.dosage = dosage;
         this.doctorNotes = doctorNotes;
     }
 
@@ -81,12 +84,14 @@ public class Prescription {
     public void setPatientName(String patientName) {}
     public void setAppointmentId(Long appointmentId) {}
     public void setMedication(String medication) { this.medication = medication; }
+    public void setDosage(String dosage) { this.dosage = dosage; }
     public void setDoctorNotes(String doctorNotes) { this.doctorNotes = doctorNotes; }
 
     public String getId() { return id;}
     public String getPatientName() { return patientName;}
     public Long getAppointmentId() { return appointmentId;}
     public String getMedication() { return medication; }
+    public String getDosage() { return dosage; }
     public String getDoctorNotes() { return doctorNotes; }
 
 }
