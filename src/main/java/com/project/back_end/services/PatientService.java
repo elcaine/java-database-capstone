@@ -1,10 +1,10 @@
-package com.example.cliniccapstone.service;
+package com.project.back_end.service;
 
-import com.example.cliniccapstone.dto.AppointmentDTO;
-import com.example.cliniccapstone.model.Appointment;
-import com.example.cliniccapstone.model.Patient;
-import com.example.cliniccapstone.repository.AppointmentRepository;
-import com.example.cliniccapstone.repository.PatientRepository;
+import com.project.back_end.dto.AppointmentDTO;
+import com.project.back_end.models.Appointment;
+import com.project.back_end.models.Patient;
+import com.project.back_end.repository.AppointmentRepository;
+import com.project.back_end.repository.PatientRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -172,6 +172,28 @@ public class PatientService {
         return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
+    public ResponseEntity<Map<String, Object>> createPatient(Patient patient) {
+        Map<String, Object> res = new HashMap<>();
+    
+        if (patient == null) {
+            res.put("message", "Invalid patient.");
+            return new ResponseEntity<>(res, HttpStatus.BAD_REQUEST);
+        }
+    
+        // Basic duplicate check (common expectation)
+        if (patient.getEmail() != null && !patient.getEmail().isBlank()) {
+            Patient existing = patientRepository.findByEmail(patient.getEmail().trim());
+            if (existing != null) {
+                res.put("message", "Email already in use.");
+                return new ResponseEntity<>(res, HttpStatus.CONFLICT);
+            }
+        }
+    
+        Patient saved = patientRepository.save(patient);
+        res.put("patient", saved);
+        return new ResponseEntity<>(res, HttpStatus.CREATED);
+    }
+    
     /**
      * Helper: convert Appointment entity to AppointmentDTO.
      * Adjust getters according to your entity fields.

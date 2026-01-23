@@ -1,11 +1,11 @@
-package com.example.cliniccapstone.service;
+package com.project.back_end.service;
 
-import com.example.cliniccapstone.model.Appointment;
-import com.example.cliniccapstone.model.Doctor;
-import com.example.cliniccapstone.model.Patient;
-import com.example.cliniccapstone.repository.AppointmentRepository;
-import com.example.cliniccapstone.repository.DoctorRepository;
-import com.example.cliniccapstone.repository.PatientRepository;
+import com.project.back_end.models.Appointment;
+import com.project.back_end.models.Doctor;
+import com.project.back_end.models.Patient;
+import com.project.back_end.repository.AppointmentRepository;
+import com.project.back_end.repository.DoctorRepository;
+import com.project.back_end.repository.PatientRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

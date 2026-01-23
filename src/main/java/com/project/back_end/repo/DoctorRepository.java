@@ -1,6 +1,6 @@
-package com.example.cliniccapstone.repository;
+package com.project.back_end.repository;
 
-import com.example.cliniccapstone.model.Doctor;
+import com.project.back_end.models.Doctor;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

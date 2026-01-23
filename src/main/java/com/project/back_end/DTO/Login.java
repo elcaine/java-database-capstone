@@ -1,15 +1,15 @@
-package com.example.cliniccapstone.dto;
+package com.project.back_end.dto;
 
 /**
- * LoginDTO
+ * Login
  * Data Transfer Object for receiving login credentials from clients.
  */
-public class LoginDTO {
+public class Login {
 
     private String identifier;
     private String password;
 
-    public LoginDTO() {
+    public Login() {
         // default constructor required for deserialization
     }
 

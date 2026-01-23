@@ -1,6 +1,6 @@
-package com.example.cliniccapstone.repository;
+package com.project.back_end.repository;
 
-import com.example.cliniccapstone.model.Admin;
+import com.project.back_end.models.Admin;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

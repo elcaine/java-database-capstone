@@ -1,8 +1,8 @@
-package com.example.cliniccapstone.controller;
+package com.project.back_end.controller;
 
-import com.example.cliniccapstone.model.Prescription;
-import com.example.cliniccapstone.service.PrescriptionService;
-import com.example.cliniccapstone.service.Service;
+import com.project.back_end.models.Prescription;
+import com.project.back_end.service.PrescriptionService;
+import com.project.back_end.service.ClinicService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +24,7 @@ public class PrescriptionController {
     private PrescriptionService prescriptionService;
 
     @Autowired
-    private Service service;
+    private ClinicService service;
 
     /**
      * Save a prescription (doctor token required).

@@ -1,8 +1,8 @@
-package com.example.cliniccapstone.controller;
+package com.project.back_end.controller;
 
-import com.example.cliniccapstone.model.Appointment;
-import com.example.cliniccapstone.service.AppointmentService;
-import com.example.cliniccapstone.service.Service;
+import com.project.back_end.models.Appointment;
+import com.project.back_end.service.AppointmentService;
+import com.project.back_end.service.ClinicService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +24,7 @@ public class AppointmentController {
     private AppointmentService appointmentService;
 
     @Autowired
-    private Service service;
+    private ClinicService service;
 
     /**
      * Get appointments for a doctor by date, patient name, and token.

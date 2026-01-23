@@ -1,13 +1,13 @@
-package com.example.cliniccapstone.service;
+package com.project.back_end.service;
 
-import com.example.cliniccapstone.dto.Login;
-import com.example.cliniccapstone.model.Admin;
-import com.example.cliniccapstone.model.Appointment;
-import com.example.cliniccapstone.model.Doctor;
-import com.example.cliniccapstone.model.Patient;
-import com.example.cliniccapstone.repository.AdminRepository;
-import com.example.cliniccapstone.repository.DoctorRepository;
-import com.example.cliniccapstone.repository.PatientRepository;
+import com.project.back_end.dto.Login;
+import com.project.back_end.models.Admin;
+import com.project.back_end.models.Appointment;
+import com.project.back_end.models.Doctor;
+import com.project.back_end.models.Patient;
+import com.project.back_end.repository.AdminRepository;
+import com.project.back_end.repository.DoctorRepository;
+import com.project.back_end.repository.PatientRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -20,7 +20,7 @@ import java.util.*;
  * Central service for authentication, doctor/patient management, and appointment validation.
  */
 @Service
-public class Service {
+public class ClinicService {
 
     private final TokenService tokenService;
     private final AdminRepository adminRepository;
@@ -29,7 +29,7 @@ public class Service {
     private final DoctorService doctorService;
     private final PatientService patientService;
 
-    public Service(
+    public ClinicService(
             TokenService tokenService,
             AdminRepository adminRepository,
             DoctorRepository doctorRepository,

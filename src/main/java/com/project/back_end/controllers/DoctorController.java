@@ -1,9 +1,9 @@
-package com.example.cliniccapstone.controller;
+package com.project.back_end.controller;
 
-import com.example.cliniccapstone.dto.Login;
-import com.example.cliniccapstone.model.Doctor;
-import com.example.cliniccapstone.service.DoctorService;
-import com.example.cliniccapstone.service.Service;
+import com.project.back_end.dto.Login;
+import com.project.back_end.models.Doctor;
+import com.project.back_end.service.DoctorService;
+import com.project.back_end.service.ClinicService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +26,7 @@ public class DoctorController {
     private DoctorService doctorService;
 
     @Autowired
-    private Service service;
+    private ClinicService service;
 
     /**
      * Get doctor availability for a given date.

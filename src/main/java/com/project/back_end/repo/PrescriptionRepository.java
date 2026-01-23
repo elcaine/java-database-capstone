@@ -1,6 +1,6 @@
-package com.example.cliniccapstone.repository;
+package com.project.back_end.repository;
 
-import com.example.cliniccapstone.model.Prescription;
+import com.project.back_end.models.Prescription;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 

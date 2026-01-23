@@ -1,7 +1,7 @@
-package com.example.cliniccapstone.service;
+package com.project.back_end.service;
 
-import com.example.cliniccapstone.model.Prescription;
-import com.example.cliniccapstone.repository.PrescriptionRepository;
+import com.project.back_end.models.Prescription;
+import com.project.back_end.repository.PrescriptionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

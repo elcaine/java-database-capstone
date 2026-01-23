@@ -1,9 +1,9 @@
-package com.example.cliniccapstone.controller;
+package com.project.back_end.controller;
 
-import com.example.cliniccapstone.dto.Login;
-import com.example.cliniccapstone.model.Patient;
-import com.example.cliniccapstone.service.PatientService;
-import com.example.cliniccapstone.service.Service;
+import com.project.back_end.dto.Login;
+import com.project.back_end.models.Patient;
+import com.project.back_end.service.PatientService;
+import com.project.back_end.service.ClinicService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +24,7 @@ public class PatientController {
     private PatientService patientService;
 
     @Autowired
-    private Service service;
+    private ClinicService service;
 
     /**
      * Get patient details using token (patient token required).
@@ -45,31 +45,20 @@ public class PatientController {
      * Create a new patient (signup).
      */
     @PostMapping
-    public ResponseEntity<Map<String, String>> createPatient(@RequestBody Patient patient) {
-        Map<String, String> res = new HashMap<>();
+    public ResponseEntity<Map<String, Object>> createPatient(@RequestBody Patient patient) {
 
+        // Keep your existing pre-check (if you want it)
         boolean okToCreate = service.validatePatient(patient);
         if (!okToCreate) {
+            Map<String, Object> res = new HashMap<>();
             res.put("message", "Patient with email id or phone no already exist");
             return new ResponseEntity<>(res, HttpStatus.CONFLICT);
         }
 
-        // NOTE: method name must match your PatientService implementation.
-        // If your course template uses createPatient(patient), keep it.
-        int created = patientService.createPatient(patient);
-
-        if (created == 1) {
-            res.put("message", "Signup successful");
-            return new ResponseEntity<>(res, HttpStatus.CREATED);
-        } else if (created == -1) {
-            // Optional: if your create method distinguishes duplicates again
-            res.put("message", "Patient with email id or phone no already exist");
-            return new ResponseEntity<>(res, HttpStatus.CONFLICT);
-        } else {
-            res.put("message", "Internal server error");
-            return new ResponseEntity<>(res, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        // IMPORTANT: PatientService.createPatient(...) returns a ResponseEntity, not int
+        return patientService.createPatient(patient);
     }
+
 
     /**
      * Patient login.

@@ -1,11 +1,11 @@
-package com.example.cliniccapstone.service;
+package com.project.back_end.service;
 
-import com.example.cliniccapstone.model.Admin;
-import com.example.cliniccapstone.model.Doctor;
-import com.example.cliniccapstone.model.Patient;
-import com.example.cliniccapstone.repository.AdminRepository;
-import com.example.cliniccapstone.repository.DoctorRepository;
-import com.example.cliniccapstone.repository.PatientRepository;
+import com.project.back_end.models.Admin;
+import com.project.back_end.models.Doctor;
+import com.project.back_end.models.Patient;
+import com.project.back_end.repository.AdminRepository;
+import com.project.back_end.repository.DoctorRepository;
+import com.project.back_end.repository.PatientRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -54,6 +54,47 @@ public class TokenService {
                 .signWith(getSigningKey())
                 .compact();
     }
+
+        /**
+     * Compatibility overload:
+     * Some services/controllers call generateToken(userId, identifier).
+     * Current token design uses the identifier as the JWT subject, so we ignore userId.
+     */
+    public String generateToken(Long userId, String identifier) {
+        return generateToken(identifier);
+    }
+
+    /**
+     * Compatibility method:
+     * Existing code expects getEmailFromToken(token).
+     * In this implementation, the token subject is the identifier (email for doctor/patient).
+     */
+    public String getEmailFromToken(String token) {
+        return extractIdentifier(token);
+    }
+
+    /**
+     * Compatibility method:
+     * Existing code expects getUserIdFromToken(token).
+     * We map the token subject back to a user record and return its id.
+     */
+    public Long getUserIdFromToken(String token) {
+        String identifier = extractIdentifier(token);
+        if (identifier == null) return null;
+
+        // Admin token subject is username; Doctor/Patient token subject is email.
+        Admin admin = adminRepository.findByUsername(identifier);
+        if (admin != null) return admin.getId();
+
+        Doctor doctor = doctorRepository.findByEmail(identifier);
+        if (doctor != null) return doctor.getId();
+
+        Patient patient = patientRepository.findByEmail(identifier);
+        if (patient != null) return patient.getId();
+
+        return null;
+    }
+
 
     /**
      * Extracts the identifier (subject) from a JWT token.

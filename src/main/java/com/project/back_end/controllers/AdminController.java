@@ -1,7 +1,7 @@
-package com.example.cliniccapstone.controller;
+package com.project.back_end.controller;
 
-import com.example.cliniccapstone.model.Admin;
-import com.example.cliniccapstone.service.Service;
+import com.project.back_end.models.Admin;
+import com.project.back_end.service.ClinicService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,7 +17,7 @@ import java.util.Map;
 public class AdminController {
 
     @Autowired
-    private Service service;
+    private ClinicService service;
 
     /**
      * Admin login endpoint.
