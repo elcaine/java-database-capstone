@@ -8,7 +8,6 @@ import com.project.back_end.repo.DoctorRepository;
 import com.project.back_end.repo.PatientRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -24,18 +23,18 @@ import java.util.*;
  * - Uses constructor injection as required by assignment comments.
  * - Uses @Transactional where the template explicitly calls it out.
  */
-@Service
+@org.springframework.stereotype.Service
 public class AppointmentService {
 
     private final AppointmentRepository appointmentRepository;
-    private final Service service;                 // shared Service.java (assignment expects this dependency)
-    private final TokenService tokenService;       // assignment lists TokenService as a dependency too
+    private final com.project.back_end.services.Service service;  // shared Service.java (assignment expects this dependency)
+    private final TokenService tokenService;                     // assignment lists TokenService as a dependency too
     private final PatientRepository patientRepository;
     private final DoctorRepository doctorRepository;
 
     public AppointmentService(
             AppointmentRepository appointmentRepository,
-            Service service,
+            com.project.back_end.services.Service service,
             TokenService tokenService,
             PatientRepository patientRepository,
             DoctorRepository doctorRepository
