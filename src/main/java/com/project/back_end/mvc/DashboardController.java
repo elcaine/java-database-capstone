@@ -1,42 +1,37 @@
 package com.project.back_end.mvc;
 
-import com.project.back_end.service.ClinicService;
+import com.project.back_end.services.Service;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-import java.util.Map;
-
 @Controller
 public class DashboardController {
 
-    private final ClinicService service;
+    private final Service service;
 
-    public DashboardController(ClinicService service) {
+    public DashboardController(Service service) {
         this.service = service;
     }
 
+    // 3. Admin dashboard
     @GetMapping("/adminDashboard/{token}")
     public String adminDashboard(@PathVariable String token) {
-        // Shared service validates token for "admin" role.
-        // If valid, the controller should forward to the admin dashboard view.
-        // If invalid, redirect to root.
-        var tokenRes = service.validateToken(token, "admin");
-        Map<String, String> body = tokenRes.getBody();
+        var tokenValidation = service.validateToken(token, "admin");
 
-        if (tokenRes.getStatusCode().is2xxSuccessful() && (body == null || body.isEmpty())) {
+        if (tokenValidation.getStatusCode().is2xxSuccessful()) {
             return "admin/adminDashboard";
         }
 
         return "redirect:/";
     }
 
+    // 4. Doctor dashboard
     @GetMapping("/doctorDashboard/{token}")
     public String doctorDashboard(@PathVariable String token) {
-        var tokenRes = service.validateToken(token, "doctor");
-        Map<String, String> body = tokenRes.getBody();
+        var tokenValidation = service.validateToken(token, "doctor");
 
-        if (tokenRes.getStatusCode().is2xxSuccessful() && (body == null || body.isEmpty())) {
+        if (tokenValidation.getStatusCode().is2xxSuccessful()) {
             return "doctor/doctorDashboard";
         }
 

@@ -1,15 +1,13 @@
 package com.project.back_end.controllers;
 
 import com.project.back_end.models.Appointment;
-import com.project.back_end.service.AppointmentService;
-import com.project.back_end.service.ClinicService;
+import com.project.back_end.services.AppointmentService;
+import com.project.back_end.services.Service;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -17,9 +15,9 @@ import java.util.Map;
 public class AppointmentController {
 
     private final AppointmentService appointmentService;
-    private final ClinicService service;
+    private final Service service;
 
-    public AppointmentController(AppointmentService appointmentService, ClinicService service) {
+    public AppointmentController(AppointmentService appointmentService, Service service) {
         this.appointmentService = appointmentService;
         this.service = service;
     }
@@ -30,17 +28,15 @@ public class AppointmentController {
             @PathVariable String patientName,
             @PathVariable String token
     ) {
-        ResponseEntity<Map<String, String>> tokenRes = service.validateToken(token, "doctor");
-        if (!tokenRes.getStatusCode().is2xxSuccessful()) {
-            // preserve the service's response body as much as possible
-            Map<String, Object> err = new HashMap<>();
-            err.putAll(tokenRes.getBody() == null ? Map.of("message", "Unauthorized") : tokenRes.getBody());
-            return new ResponseEntity<>(err, tokenRes.getStatusCode());
+        ResponseEntity<Map<String, String>> tokenValidation = service.validateToken(token, "doctor");
+        if (!tokenValidation.getStatusCode().is2xxSuccessful()) {
+            // Return unauthorized/expired token response (as per shared validation approach).
+            return new ResponseEntity<>(Map.of("message", "Unauthorized"), tokenValidation.getStatusCode());
         }
 
-        LocalDate parsedDate = LocalDate.parse(date);
-        Map<String, Object> result = appointmentService.getAppointment(patientName, parsedDate, token);
-        return new ResponseEntity<>(result, HttpStatus.OK);
+        LocalDate appointmentDate = LocalDate.parse(date);
+        Map<String, Object> res = appointmentService.getAppointment(patientName, appointmentDate, token);
+        return ResponseEntity.ok(res);
     }
 
     @PostMapping("/{token}")
@@ -48,33 +44,23 @@ public class AppointmentController {
             @PathVariable String token,
             @Valid @RequestBody Appointment appointment
     ) {
-        ResponseEntity<Map<String, String>> tokenRes = service.validateToken(token, "patient");
-        if (!tokenRes.getStatusCode().is2xxSuccessful()) {
-            return tokenRes;
+        ResponseEntity<Map<String, String>> tokenValidation = service.validateToken(token, "patient");
+        if (!tokenValidation.getStatusCode().is2xxSuccessful()) {
+            return tokenValidation;
         }
 
-        int valid = service.validateAppointment(appointment);
-        if (valid == -1) {
-            Map<String, String> err = new HashMap<>();
-            err.put("message", "Doctor not found.");
-            return new ResponseEntity<>(err, HttpStatus.NOT_FOUND);
-        }
-        if (valid == 0) {
-            Map<String, String> err = new HashMap<>();
-            err.put("message", "Appointment time unavailable.");
-            return new ResponseEntity<>(err, HttpStatus.CONFLICT);
+        int appointmentValidation = service.validateAppointment(appointment);
+
+        // Per template guidance: invalid doctor ID or unavailable slot should return appropriate failure.
+        if (appointmentValidation == -1) {
+            return ResponseEntity.status(404).body(Map.of("message", "Doctor not found."));
         }
 
-        int booked = appointmentService.bookAppointment(appointment);
-        if (booked == 1) {
-            Map<String, String> ok = new HashMap<>();
-            ok.put("message", "Appointment booked successfully.");
-            return new ResponseEntity<>(ok, HttpStatus.CREATED);
+        if (appointmentValidation == 0) {
+            return ResponseEntity.status(409).body(Map.of("message", "Appointment time unavailable."));
         }
 
-        Map<String, String> err = new HashMap<>();
-        err.put("message", "Failed to book appointment.");
-        return new ResponseEntity<>(err, HttpStatus.INTERNAL_SERVER_ERROR);
+        return appointmentService.bookAppointment(appointment);
     }
 
     @PutMapping("/{token}")
@@ -82,10 +68,11 @@ public class AppointmentController {
             @PathVariable String token,
             @Valid @RequestBody Appointment appointment
     ) {
-        ResponseEntity<Map<String, String>> tokenRes = service.validateToken(token, "patient");
-        if (!tokenRes.getStatusCode().is2xxSuccessful()) {
-            return tokenRes;
+        ResponseEntity<Map<String, String>> tokenValidation = service.validateToken(token, "patient");
+        if (!tokenValidation.getStatusCode().is2xxSuccessful()) {
+            return tokenValidation;
         }
+
         return appointmentService.updateAppointment(appointment);
     }
 
@@ -94,10 +81,11 @@ public class AppointmentController {
             @PathVariable long id,
             @PathVariable String token
     ) {
-        ResponseEntity<Map<String, String>> tokenRes = service.validateToken(token, "patient");
-        if (!tokenRes.getStatusCode().is2xxSuccessful()) {
-            return tokenRes;
+        ResponseEntity<Map<String, String>> tokenValidation = service.validateToken(token, "patient");
+        if (!tokenValidation.getStatusCode().is2xxSuccessful()) {
+            return tokenValidation;
         }
+
         return appointmentService.cancelAppointment(id, token);
     }
 }
