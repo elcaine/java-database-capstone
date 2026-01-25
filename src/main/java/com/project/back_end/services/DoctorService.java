@@ -1,6 +1,6 @@
 package com.project.back_end.services;
 
-import com.project.back_end.dto.Login;
+import com.project.back_end.DTO.Login;
 import com.project.back_end.models.Appointment;
 import com.project.back_end.models.Doctor;
 import com.project.back_end.repo.AppointmentRepository;
@@ -56,7 +56,7 @@ public class DoctorService {
         LocalDateTime start = date.atStartOfDay();
         LocalDateTime end = date.plusDays(1).atStartOfDay();
 
-        List<Appointment> booked = appointmentRepository.findByDoctorIdAndAppointmentTimeBetween(
+        List<Appointment> booked = appointmentRepository.findByDoctor_IdAndAppointmentTimeBetween(
                 doctorId, start, end
         );
 
@@ -129,7 +129,7 @@ public class DoctorService {
             Optional<Doctor> doctorOpt = doctorRepository.findById(id);
             if (doctorOpt.isEmpty()) return -1;
 
-            appointmentRepository.deleteAllByDoctorId(id);
+            appointmentRepository.deleteAllByDoctor_Id(id);
             doctorRepository.deleteById(id);
             return 1;
         } catch (Exception e) {
@@ -143,12 +143,12 @@ public class DoctorService {
     public ResponseEntity<Map<String, String>> validateDoctor(Login login) {
         Map<String, String> res = new HashMap<>();
 
-        if (login == null || login.getIdentifier() == null || login.getPassword() == null) {
+        if (login == null || login.getEmail() == null || login.getPassword() == null) {
             res.put("message", "Invalid login request.");
             return new ResponseEntity<>(res, HttpStatus.BAD_REQUEST);
         }
 
-        Doctor doctor = doctorRepository.findByEmail(login.getIdentifier());
+        Doctor doctor = doctorRepository.findByEmail(login.getEmail());
         if (doctor == null) {
             res.put("message", "Doctor not found.");
             return new ResponseEntity<>(res, HttpStatus.NOT_FOUND);

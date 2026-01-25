@@ -171,7 +171,7 @@ public class AppointmentService {
         LocalDateTime start = date.atStartOfDay();
         LocalDateTime end = date.plusDays(1).atStartOfDay();
 
-        List<Appointment> appts = appointmentRepository.findByDoctorIdAndAppointmentTimeBetween(
+        List<Appointment> appts = appointmentRepository.findByDoctor_IdAndAppointmentTimeBetween(
                 doctor.getId(), start, end
         );
 
@@ -187,6 +187,24 @@ public class AppointmentService {
 
         res.put("appointments", appts);
         return res;
+    }
+
+    /**
+     * updateAppointmentStatusAfterPrescription
+     * Called after a prescription is saved to mark the appointment as completed.
+     * Template/controllers expect this method name.
+     */
+    @Transactional
+    public void updateAppointmentStatusAfterPrescription(Long appointmentId) {
+        if (appointmentId == null) return;
+
+        // Assignment convention: 0 = Scheduled, 1 = Completed
+        Optional<Appointment> apptOpt = appointmentRepository.findById(appointmentId);
+        if (apptOpt.isEmpty()) return;
+
+        Appointment appt = apptOpt.get();
+        appt.setStatus(1);
+        appointmentRepository.save(appt);
     }
 
     /**
@@ -261,7 +279,7 @@ public class AppointmentService {
         LocalDateTime start = appointment.getAppointmentTime();
         LocalDateTime end = appointment.getAppointmentTime().plusHours(1);
 
-        List<Appointment> collisions = appointmentRepository.findByDoctorIdAndAppointmentTimeBetween(
+        List<Appointment> collisions = appointmentRepository.findByDoctor_IdAndAppointmentTimeBetween(
                 doctorId, start, end
         );
 

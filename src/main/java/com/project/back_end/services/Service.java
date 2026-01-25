@@ -172,12 +172,12 @@ public class Service {
         Map<String, String> res = new HashMap<>();
 
         try {
-            if (login == null || login.getIdentifier() == null || login.getPassword() == null) {
+            if (login == null || login.getEmail() == null || login.getPassword() == null) {
                 res.put("message", "Invalid login request.");
                 return new ResponseEntity<>(res, HttpStatus.BAD_REQUEST);
             }
 
-            Patient patient = patientRepository.findByEmail(login.getIdentifier());
+            Patient patient = patientRepository.findByEmail(login.getEmail());
             if (patient == null) {
                 res.put("message", "Invalid credentials.");
                 return new ResponseEntity<>(res, HttpStatus.UNAUTHORIZED);

@@ -5,9 +5,11 @@ import com.project.back_end.models.Patient;
 import com.project.back_end.services.PatientService;
 import com.project.back_end.services.Service;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -41,11 +43,20 @@ public class PatientController {
         boolean isValid = service.validatePatient(patient);
         if (!isValid) {
             return ResponseEntity
-                    .status(409)
+                    .status(HttpStatus.CONFLICT)
                     .body(Map.of("message", "Patient with email id or phone no already exist"));
         }
 
-        return patientService.createPatient(patient);
+        int created = patientService.createPatient(patient);
+
+        Map<String, Object> res = new HashMap<>();
+        if (created == 1) {
+            res.put("message", "Patient added to db");
+            return new ResponseEntity<>(res, HttpStatus.CREATED);
+        }
+
+        res.put("message", "Some internal error occurred");
+        return new ResponseEntity<>(res, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     // 5. Patient login

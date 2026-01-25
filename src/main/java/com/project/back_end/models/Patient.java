@@ -93,7 +93,7 @@ public class Patient {
     public Long getId() { return id; }
     public String getName() { return name; }
     public String getEmail() { return email; }
-    // public String getPassword() { return password; }
+    public String getPassword() { return password; }
     public String getPhone() { return phone; }
     public String getAddress() { return address; }
 

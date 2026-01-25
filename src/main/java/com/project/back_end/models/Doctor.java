@@ -63,7 +63,7 @@ public class Doctor {
     public List<String> getAvailableTimes() { return availableTimes; }
 
     // Optional: include only if you find template/tests expect it
-    // public String getPassword() { return password; }
+    public String getPassword() { return password; }
 
     public void setId(Long id) { this.id = id; }
     public void setName(String name) { this.name = name; }

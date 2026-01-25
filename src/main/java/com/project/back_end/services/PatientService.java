@@ -1,6 +1,6 @@
 package com.project.back_end.services;
 
-import com.project.back_end.dto.AppointmentDTO;
+import com.project.back_end.DTO.AppointmentDTO;
 import com.project.back_end.models.Appointment;
 import com.project.back_end.models.Patient;
 import com.project.back_end.repo.AppointmentRepository;
@@ -45,11 +45,12 @@ public class PatientService {
     }
 
     /**
-     * getPatientAppointment
+     * getPatientAppointments
+     * Assignment/controllers expect this method name.
      * Returns a map with key "appointments" containing AppointmentDTO objects.
      */
     @Transactional
-    public ResponseEntity<Map<String, Object>> getPatientAppointment(Long patientId, String token) {
+    public ResponseEntity<Map<String, Object>> getPatientAppointments(Long patientId, String token) {
         Map<String, Object> res = new HashMap<>();
 
         String emailFromToken = tokenService.getEmailFromToken(token);
@@ -69,7 +70,7 @@ public class PatientService {
             return new ResponseEntity<>(res, HttpStatus.UNAUTHORIZED);
         }
 
-        List<Appointment> appts = appointmentRepository.findByPatientId(patientId);
+        List<Appointment> appts = appointmentRepository.findByPatient_Id(patientId);
 
         List<AppointmentDTO> dtos = new ArrayList<>();
         for (Appointment a : appts) {
@@ -78,6 +79,15 @@ public class PatientService {
 
         res.put("appointments", dtos);
         return new ResponseEntity<>(res, HttpStatus.OK);
+    }
+
+    /**
+     * getPatientAppointment
+     * Kept for backward compatibility; delegates to the template-expected plural method.
+     */
+    @Transactional
+    public ResponseEntity<Map<String, Object>> getPatientAppointment(Long patientId, String token) {
+        return getPatientAppointments(patientId, token);
     }
 
     /**

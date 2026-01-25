@@ -4,10 +4,12 @@ import com.project.back_end.models.Appointment;
 import com.project.back_end.services.AppointmentService;
 import com.project.back_end.services.Service;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -30,7 +32,6 @@ public class AppointmentController {
     ) {
         ResponseEntity<Map<String, String>> tokenValidation = service.validateToken(token, "doctor");
         if (!tokenValidation.getStatusCode().is2xxSuccessful()) {
-            // Return unauthorized/expired token response (as per shared validation approach).
             return new ResponseEntity<>(Map.of("message", "Unauthorized"), tokenValidation.getStatusCode());
         }
 
@@ -53,14 +54,23 @@ public class AppointmentController {
 
         // Per template guidance: invalid doctor ID or unavailable slot should return appropriate failure.
         if (appointmentValidation == -1) {
-            return ResponseEntity.status(404).body(Map.of("message", "Doctor not found."));
+            return new ResponseEntity<>(Map.of("message", "Doctor not found."), HttpStatus.NOT_FOUND);
         }
 
         if (appointmentValidation == 0) {
-            return ResponseEntity.status(409).body(Map.of("message", "Appointment time unavailable."));
+            return new ResponseEntity<>(Map.of("message", "Appointment time unavailable."), HttpStatus.CONFLICT);
         }
 
-        return appointmentService.bookAppointment(appointment);
+        int booked = appointmentService.bookAppointment(appointment);
+
+        Map<String, String> res = new HashMap<>();
+        if (booked == 1) {
+            res.put("message", "Appointment booked successfully.");
+            return new ResponseEntity<>(res, HttpStatus.CREATED);
+        }
+
+        res.put("message", "Failed to book appointment.");
+        return new ResponseEntity<>(res, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @PutMapping("/{token}")
