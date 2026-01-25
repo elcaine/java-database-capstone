@@ -1,4 +1,4 @@
-package com.project.back_end.service;
+package com.project.back_end.services;
 
 import com.project.back_end.models.Admin;
 import com.project.back_end.models.Doctor;
@@ -16,10 +16,6 @@ import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
-/**
- * TokenService
- * Generates, extracts, and validates JWT tokens.
- */
 @Component
 public class TokenService {
 
@@ -55,9 +51,8 @@ public class TokenService {
                 .compact();
     }
 
-        /**
-     * Compatibility overload:
-     * Some services/controllers call generateToken(userId, identifier).
+    /**
+     * Compatibility overload (some code calls generateToken(userId, identifier)).
      * Current token design uses the identifier as the JWT subject, so we ignore userId.
      */
     public String generateToken(Long userId, String identifier) {
@@ -65,36 +60,13 @@ public class TokenService {
     }
 
     /**
-     * Compatibility method:
-     * Existing code expects getEmailFromToken(token).
-     * In this implementation, the token subject is the identifier (email for doctor/patient).
+     * Compatibility method name used elsewhere in your code.
+     * In this design, the token subject is the identifier.
+     * For doctor/patient, that identifier is email.
      */
     public String getEmailFromToken(String token) {
         return extractIdentifier(token);
     }
-
-    /**
-     * Compatibility method:
-     * Existing code expects getUserIdFromToken(token).
-     * We map the token subject back to a user record and return its id.
-     */
-    public Long getUserIdFromToken(String token) {
-        String identifier = extractIdentifier(token);
-        if (identifier == null) return null;
-
-        // Admin token subject is username; Doctor/Patient token subject is email.
-        Admin admin = adminRepository.findByUsername(identifier);
-        if (admin != null) return admin.getId();
-
-        Doctor doctor = doctorRepository.findByEmail(identifier);
-        if (doctor != null) return doctor.getId();
-
-        Patient patient = patientRepository.findByEmail(identifier);
-        if (patient != null) return patient.getId();
-
-        return null;
-    }
-
 
     /**
      * Extracts the identifier (subject) from a JWT token.
@@ -151,9 +123,6 @@ public class TokenService {
         }
     }
 
-    /**
-     * Returns the signing key derived from the configured secret.
-     */
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
     }

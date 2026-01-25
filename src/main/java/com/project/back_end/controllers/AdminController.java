@@ -1,28 +1,22 @@
-package com.project.back_end.controller;
+package com.project.back_end.controllers;
 
 import com.project.back_end.models.Admin;
 import com.project.back_end.service.ClinicService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
-/**
- * AdminController
- * REST controller for admin authentication.
- */
 @RestController
-@RequestMapping("${api.path}" + "admin")
+@RequestMapping("${api.path}admin")
 public class AdminController {
 
-    @Autowired
-    private ClinicService service;
+    private final ClinicService service;
 
-    /**
-     * Admin login endpoint.
-     * Accepts Admin credentials in the request body and returns a token if valid.
-     */
+    public AdminController(ClinicService service) {
+        this.service = service;
+    }
+
     @PostMapping
     public ResponseEntity<Map<String, String>> adminLogin(@RequestBody Admin admin) {
         return service.validateAdmin(admin);

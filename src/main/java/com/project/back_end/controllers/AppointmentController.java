@@ -1,9 +1,9 @@
-package com.project.back_end.controller;
+package com.project.back_end.controllers;
 
 import com.project.back_end.models.Appointment;
 import com.project.back_end.service.AppointmentService;
 import com.project.back_end.service.ClinicService;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,35 +12,30 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * AppointmentController
- * REST controller for appointment booking, retrieval, updates, and cancellations.
- */
 @RestController
 @RequestMapping("/appointments")
 public class AppointmentController {
 
-    @Autowired
-    private AppointmentService appointmentService;
+    private final AppointmentService appointmentService;
+    private final ClinicService service;
 
-    @Autowired
-    private ClinicService service;
+    public AppointmentController(AppointmentService appointmentService, ClinicService service) {
+        this.appointmentService = appointmentService;
+        this.service = service;
+    }
 
-    /**
-     * Get appointments for a doctor by date, patient name, and token.
-     */
     @GetMapping("/{date}/{patientName}/{token}")
     public ResponseEntity<Map<String, Object>> getAppointments(
             @PathVariable String date,
             @PathVariable String patientName,
             @PathVariable String token
     ) {
-        // Validate doctor token
         ResponseEntity<Map<String, String>> tokenRes = service.validateToken(token, "doctor");
         if (!tokenRes.getStatusCode().is2xxSuccessful()) {
+            // preserve the service's response body as much as possible
             Map<String, Object> err = new HashMap<>();
-            err.put("message", "Unauthorized");
-            return new ResponseEntity<>(err, HttpStatus.UNAUTHORIZED);
+            err.putAll(tokenRes.getBody() == null ? Map.of("message", "Unauthorized") : tokenRes.getBody());
+            return new ResponseEntity<>(err, tokenRes.getStatusCode());
         }
 
         LocalDate parsedDate = LocalDate.parse(date);
@@ -48,23 +43,16 @@ public class AppointmentController {
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
-    /**
-     * Book an appointment (patient token required).
-     */
     @PostMapping("/{token}")
     public ResponseEntity<Map<String, String>> bookAppointment(
             @PathVariable String token,
-            @RequestBody Appointment appointment
+            @Valid @RequestBody Appointment appointment
     ) {
-        // Validate patient token
         ResponseEntity<Map<String, String>> tokenRes = service.validateToken(token, "patient");
         if (!tokenRes.getStatusCode().is2xxSuccessful()) {
-            Map<String, String> err = new HashMap<>();
-            err.put("message", "Unauthorized");
-            return new ResponseEntity<>(err, HttpStatus.UNAUTHORIZED);
+            return tokenRes;
         }
 
-        // Validate appointment availability
         int valid = service.validateAppointment(appointment);
         if (valid == -1) {
             Map<String, String> err = new HashMap<>();
@@ -89,27 +77,18 @@ public class AppointmentController {
         return new ResponseEntity<>(err, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    /**
-     * Update an appointment (patient token required).
-     */
     @PutMapping("/{token}")
     public ResponseEntity<Map<String, String>> updateAppointment(
             @PathVariable String token,
-            @RequestBody Appointment appointment
+            @Valid @RequestBody Appointment appointment
     ) {
         ResponseEntity<Map<String, String>> tokenRes = service.validateToken(token, "patient");
         if (!tokenRes.getStatusCode().is2xxSuccessful()) {
-            Map<String, String> err = new HashMap<>();
-            err.put("message", "Unauthorized");
-            return new ResponseEntity<>(err, HttpStatus.UNAUTHORIZED);
+            return tokenRes;
         }
-
         return appointmentService.updateAppointment(appointment);
     }
 
-    /**
-     * Cancel an appointment (patient token required).
-     */
     @DeleteMapping("/{id}/{token}")
     public ResponseEntity<Map<String, String>> cancelAppointment(
             @PathVariable long id,
@@ -117,11 +96,8 @@ public class AppointmentController {
     ) {
         ResponseEntity<Map<String, String>> tokenRes = service.validateToken(token, "patient");
         if (!tokenRes.getStatusCode().is2xxSuccessful()) {
-            Map<String, String> err = new HashMap<>();
-            err.put("message", "Unauthorized");
-            return new ResponseEntity<>(err, HttpStatus.UNAUTHORIZED);
+            return tokenRes;
         }
-
         return appointmentService.cancelAppointment(id, token);
     }
 }

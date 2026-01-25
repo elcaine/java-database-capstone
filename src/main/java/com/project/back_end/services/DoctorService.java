@@ -1,16 +1,14 @@
-package com.project.back_end.service;
+package com.project.back_end.services;
 
 import com.project.back_end.dto.Login;
 import com.project.back_end.models.Appointment;
 import com.project.back_end.models.Doctor;
-import com.project.back_end.repository.AppointmentRepository;
-import com.project.back_end.repository.DoctorRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.project.back_end.repo.AppointmentRepository;
+import com.project.back_end.repo.DoctorRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -19,21 +17,27 @@ import java.util.*;
  * DoctorService
  * Manages operations related to doctors: availability, CRUD, login validation, and filtering.
  */
-@Service
+@org.springframework.stereotype.Service
 public class DoctorService {
 
-    @Autowired
-    private DoctorRepository doctorRepository;
+    private final DoctorRepository doctorRepository;
+    private final AppointmentRepository appointmentRepository;
+    private final TokenService tokenService;
 
-    @Autowired
-    private AppointmentRepository appointmentRepository;
-
-    @Autowired
-    private TokenService tokenService;
+    public DoctorService(
+            DoctorRepository doctorRepository,
+            AppointmentRepository appointmentRepository,
+            TokenService tokenService
+    ) {
+        this.doctorRepository = doctorRepository;
+        this.appointmentRepository = appointmentRepository;
+        this.tokenService = tokenService;
+    }
 
     /**
      * Fetch available slots for a doctor on a given date by removing booked slots.
      */
+    @Transactional
     public List<String> getDoctorAvailability(Long doctorId, LocalDate date) {
         if (doctorId == null || date == null) return Collections.emptyList();
 
@@ -42,7 +46,7 @@ public class DoctorService {
 
         Doctor doctor = doctorOpt.get();
 
-        // Doctor's baseline availability (assumes Doctor has getAvailableTimes(): List<String>)
+        // Doctor's baseline availability
         List<String> available = new ArrayList<>();
         if (doctor.getAvailableTimes() != null) {
             available.addAll(doctor.getAvailableTimes());
@@ -63,7 +67,7 @@ public class DoctorService {
             }
         }
 
-        // Remove booked slots if formats align (you may need to normalize to "HH:mm")
+        // Remove booked slots (format must align with what's stored in doctor.availableTimes)
         available.removeIf(slot -> bookedSlots.contains(slot));
 
         return available;
@@ -73,6 +77,7 @@ public class DoctorService {
      * Save a new doctor.
      * @return 1 success, -1 already exists, 0 internal error
      */
+    @Transactional
     public int saveDoctor(Doctor doctor) {
         try {
             if (doctor == null || doctor.getEmail() == null) return 0;
@@ -91,6 +96,7 @@ public class DoctorService {
      * Update an existing doctor.
      * @return 1 success, -1 not found, 0 internal error
      */
+    @Transactional
     public int updateDoctor(Doctor doctor) {
         try {
             if (doctor == null || doctor.getId() == null) return 0;
@@ -108,6 +114,7 @@ public class DoctorService {
     /**
      * Retrieve all doctors.
      */
+    @Transactional
     public List<Doctor> getDoctors() {
         return doctorRepository.findAll();
     }
@@ -152,8 +159,8 @@ public class DoctorService {
             return new ResponseEntity<>(res, HttpStatus.UNAUTHORIZED);
         }
 
-        // Generate token (method name may differ in your TokenService)
-        String token = tokenService.generateToken(doctor.getId(), "doctor");
+        // Assignment expectation: doctor token subject = doctor email
+        String token = tokenService.generateToken(doctor.getEmail());
 
         res.put("token", token);
         res.put("message", "Login successful.");
@@ -163,6 +170,7 @@ public class DoctorService {
     /**
      * Find doctors by (partial) name match.
      */
+    @Transactional
     public Map<String, Object> findDoctorByName(String name) {
         Map<String, Object> res = new HashMap<>();
         String needle = (name == null) ? "" : name.trim();
@@ -175,6 +183,7 @@ public class DoctorService {
     /**
      * Filter by name + specialty + time.
      */
+    @Transactional
     public Map<String, Object> filterDoctorsByNameSpecilityandTime(String name, String specialty, String amOrPm) {
         Map<String, Object> res = new HashMap<>();
 
@@ -191,6 +200,7 @@ public class DoctorService {
     /**
      * Filter by name + time.
      */
+    @Transactional
     public Map<String, Object> filterDoctorByNameAndTime(String name, String amOrPm) {
         Map<String, Object> res = new HashMap<>();
 
@@ -205,6 +215,7 @@ public class DoctorService {
     /**
      * Filter by name + specialty.
      */
+    @Transactional
     public Map<String, Object> filterDoctorByNameAndSpecility(String name, String specilty) {
         Map<String, Object> res = new HashMap<>();
 
@@ -219,6 +230,7 @@ public class DoctorService {
     /**
      * Filter by time + specialty.
      */
+    @Transactional
     public Map<String, Object> filterDoctorByTimeAndSpecility(String specilty, String amOrPm) {
         Map<String, Object> res = new HashMap<>();
 
@@ -233,6 +245,7 @@ public class DoctorService {
     /**
      * Filter by specialty.
      */
+    @Transactional
     public Map<String, Object> filterDoctorBySpecility(String specilty) {
         Map<String, Object> res = new HashMap<>();
 
@@ -246,6 +259,7 @@ public class DoctorService {
     /**
      * Filter all doctors by time (AM/PM).
      */
+    @Transactional
     public Map<String, Object> filterDoctorsByTime(String amOrPm) {
         Map<String, Object> res = new HashMap<>();
 
@@ -258,7 +272,7 @@ public class DoctorService {
 
     /**
      * Filters a list of doctors by AM/PM availability.
-     * Assumes doctor.getAvailableTimes() returns List<String> slots such as "09:00 AM".
+     * Assumes doctor.getAvailableTimes() returns List<String> slots containing "AM" or "PM".
      */
     private List<Doctor> filterDoctorByTime(List<Doctor> doctors, String amOrPm) {
         if (doctors == null) return Collections.emptyList();
@@ -266,17 +280,21 @@ public class DoctorService {
 
         String target = amOrPm.trim().toUpperCase(Locale.ROOT);
 
-        return doctors.stream()
-                .filter(d -> {
-                    List<String> slots = d.getAvailableTimes();
-                    if (slots == null) return false;
-                    for (String slot : slots) {
-                        if (slot != null && slot.toUpperCase(Locale.ROOT).contains(target)) {
-                            return true;
-                        }
-                    }
-                    return false;
-                })
-                .toList();
+        List<Doctor> filtered = new ArrayList<>();
+        for (Doctor d : doctors) {
+            List<String> slots = d.getAvailableTimes();
+            if (slots == null) continue;
+
+            boolean match = false;
+            for (String slot : slots) {
+                if (slot != null && slot.toUpperCase(Locale.ROOT).contains(target)) {
+                    match = true;
+                    break;
+                }
+            }
+            if (match) filtered.add(d);
+        }
+
+        return filtered;
     }
 }

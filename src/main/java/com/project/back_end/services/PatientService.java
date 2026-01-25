@@ -1,39 +1,55 @@
-package com.project.back_end.service;
+package com.project.back_end.services;
 
 import com.project.back_end.dto.AppointmentDTO;
 import com.project.back_end.models.Appointment;
 import com.project.back_end.models.Patient;
-import com.project.back_end.repository.AppointmentRepository;
-import com.project.back_end.repository.PatientRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.project.back_end.repo.AppointmentRepository;
+import com.project.back_end.repo.PatientRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
 /**
  * PatientService
- * Handles patient-related operations including retrieving appointments and patient details,
- * with authorization based on JWT token.
+ * Business logic for patients: create patient, fetch appointments, filter appointments, and fetch patient details.
  */
 @Service
 public class PatientService {
 
-    @Autowired
-    private PatientRepository patientRepository;
+    private final PatientRepository patientRepository;
+    private final AppointmentRepository appointmentRepository;
+    private final TokenService tokenService;
 
-    @Autowired
-    private AppointmentRepository appointmentRepository;
-
-    @Autowired
-    private TokenService tokenService;
+    public PatientService(PatientRepository patientRepository,
+                          AppointmentRepository appointmentRepository,
+                          TokenService tokenService) {
+        this.patientRepository = patientRepository;
+        this.appointmentRepository = appointmentRepository;
+        this.tokenService = tokenService;
+    }
 
     /**
-     * Retrieves a patient's appointments, ensuring the patientId matches the token's user.
-     * Returns AppointmentDTO list in the response map under key "appointments".
+     * createPatient
+     * Template expectation: returns 1 on success, 0 on failure.
      */
-    public ResponseEntity<Map<String, Object>> getPatientAppointments(Long patientId, String token) {
+    public int createPatient(Patient patient) {
+        try {
+            patientRepository.save(patient);
+            return 1;
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+    /**
+     * getPatientAppointment
+     * Returns a map with key "appointments" containing AppointmentDTO objects.
+     */
+    @Transactional
+    public ResponseEntity<Map<String, Object>> getPatientAppointment(Long patientId, String token) {
         Map<String, Object> res = new HashMap<>();
 
         String emailFromToken = tokenService.getEmailFromToken(token);
@@ -65,9 +81,10 @@ public class PatientService {
     }
 
     /**
-     * Filters appointments by condition ("past" or "future") for a specific patient.
-     * Uses status: 1 for past, 0 for future.
+     * filterByCondition
+     * condition: "past" -> status 1, "future" -> status 0
      */
+    @Transactional
     public ResponseEntity<Map<String, Object>> filterByCondition(String condition, Long id) {
         Map<String, Object> res = new HashMap<>();
 
@@ -99,8 +116,10 @@ public class PatientService {
     }
 
     /**
-     * Filters appointments by doctor's name for a specific patient.
+     * filterByDoctor
+     * Filters appointments for a patient by doctor name.
      */
+    @Transactional
     public ResponseEntity<Map<String, Object>> filterByDoctor(String name, Long patientId) {
         Map<String, Object> res = new HashMap<>();
 
@@ -123,8 +142,10 @@ public class PatientService {
     }
 
     /**
-     * Filters appointments by doctor's name and condition ("past"/"future") for a specific patient.
+     * filterByDoctorAndCondition
+     * Filters appointments for a patient by doctor name and condition ("past"/"future").
      */
+    @Transactional
     public ResponseEntity<Map<String, Object>> filterByDoctorAndCondition(String condition, String name, long patientId) {
         Map<String, Object> res = new HashMap<>();
 
@@ -151,7 +172,8 @@ public class PatientService {
     }
 
     /**
-     * Fetch the patient's details using the JWT token (email).
+     * getPatientDetails
+     * Uses token -> email -> patient.
      */
     public ResponseEntity<Map<String, Object>> getPatientDetails(String token) {
         Map<String, Object> res = new HashMap<>();
@@ -172,32 +194,6 @@ public class PatientService {
         return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
-    public ResponseEntity<Map<String, Object>> createPatient(Patient patient) {
-        Map<String, Object> res = new HashMap<>();
-    
-        if (patient == null) {
-            res.put("message", "Invalid patient.");
-            return new ResponseEntity<>(res, HttpStatus.BAD_REQUEST);
-        }
-    
-        // Basic duplicate check (common expectation)
-        if (patient.getEmail() != null && !patient.getEmail().isBlank()) {
-            Patient existing = patientRepository.findByEmail(patient.getEmail().trim());
-            if (existing != null) {
-                res.put("message", "Email already in use.");
-                return new ResponseEntity<>(res, HttpStatus.CONFLICT);
-            }
-        }
-    
-        Patient saved = patientRepository.save(patient);
-        res.put("patient", saved);
-        return new ResponseEntity<>(res, HttpStatus.CREATED);
-    }
-    
-    /**
-     * Helper: convert Appointment entity to AppointmentDTO.
-     * Adjust getters according to your entity fields.
-     */
     private AppointmentDTO toDTO(Appointment a) {
         Long doctorId = (a.getDoctor() != null) ? a.getDoctor().getId() : null;
         String doctorName = (a.getDoctor() != null) ? a.getDoctor().getName() : null;

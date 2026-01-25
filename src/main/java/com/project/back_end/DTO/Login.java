@@ -1,24 +1,20 @@
-package com.project.back_end.dto;
+package com.project.back_end.DTO;
 
-/**
- * Login
- * Data Transfer Object for receiving login credentials from clients.
- */
 public class Login {
 
-    private String identifier;
+    private String email;
     private String password;
 
     public Login() {
-        // default constructor required for deserialization
+        // default constructor
     }
 
-    public String getIdentifier() {
-        return identifier;
+    public String getEmail() {
+        return email;
     }
 
-    public void setIdentifier(String identifier) {
-        this.identifier = identifier;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getPassword() {

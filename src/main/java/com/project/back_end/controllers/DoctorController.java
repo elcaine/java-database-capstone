@@ -1,10 +1,10 @@
-package com.project.back_end.controller;
+package com.project.back_end.controllers;
 
-import com.project.back_end.dto.Login;
+import com.project.back_end.DTO.Login;
 import com.project.back_end.models.Doctor;
-import com.project.back_end.service.DoctorService;
 import com.project.back_end.service.ClinicService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.project.back_end.service.DoctorService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,24 +14,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * DoctorController
- * REST controller for doctor operations: availability, CRUD, login, and filtering.
- */
 @RestController
-@RequestMapping("${api.path}" + "doctor")
+@RequestMapping("${api.path}doctor")
 public class DoctorController {
 
-    @Autowired
-    private DoctorService doctorService;
+    private final DoctorService doctorService;
+    private final ClinicService service;
 
-    @Autowired
-    private ClinicService service;
+    public DoctorController(DoctorService doctorService, ClinicService service) {
+        this.doctorService = doctorService;
+        this.service = service;
+    }
 
-    /**
-     * Get doctor availability for a given date.
-     * Validates token for the provided user role.
-     */
     @GetMapping("/availability/{user}/{doctorId}/{date}/{token}")
     public ResponseEntity<Map<String, Object>> getDoctorAvailability(
             @PathVariable String user,
@@ -39,12 +33,11 @@ public class DoctorController {
             @PathVariable String date,
             @PathVariable String token
     ) {
-        // Validate token for role
         ResponseEntity<Map<String, String>> tokenRes = service.validateToken(token, user);
         if (!tokenRes.getStatusCode().is2xxSuccessful()) {
             Map<String, Object> err = new HashMap<>();
-            err.put("message", "Unauthorized");
-            return new ResponseEntity<>(err, HttpStatus.UNAUTHORIZED);
+            err.putAll(tokenRes.getBody() == null ? Map.of("message", "Unauthorized") : tokenRes.getBody());
+            return new ResponseEntity<>(err, tokenRes.getStatusCode());
         }
 
         LocalDate parsedDate = LocalDate.parse(date);
@@ -55,9 +48,6 @@ public class DoctorController {
         return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
-    /**
-     * Get all doctors.
-     */
     @GetMapping
     public Map<String, Object> getDoctors() {
         Map<String, Object> res = new HashMap<>();
@@ -65,19 +55,14 @@ public class DoctorController {
         return res;
     }
 
-    /**
-     * Add a new doctor (admin token required).
-     */
     @PostMapping("/{token}")
     public ResponseEntity<Map<String, String>> addDoctor(
-            @RequestBody Doctor doctor,
+            @Valid @RequestBody Doctor doctor,
             @PathVariable String token
     ) {
         ResponseEntity<Map<String, String>> tokenRes = service.validateToken(token, "admin");
         if (!tokenRes.getStatusCode().is2xxSuccessful()) {
-            Map<String, String> err = new HashMap<>();
-            err.put("message", "Unauthorized");
-            return new ResponseEntity<>(err, HttpStatus.UNAUTHORIZED);
+            return tokenRes;
         }
 
         int result = doctorService.saveDoctor(doctor);
@@ -95,27 +80,19 @@ public class DoctorController {
         }
     }
 
-    /**
-     * Doctor login.
-     */
     @PostMapping("/login")
-    public ResponseEntity<Map<String, String>> doctorLogin(@RequestBody Login login) {
+    public ResponseEntity<Map<String, String>> doctorLogin(@Valid @RequestBody Login login) {
         return doctorService.validateDoctor(login);
     }
 
-    /**
-     * Update doctor details (admin token required).
-     */
     @PutMapping("/{token}")
     public ResponseEntity<Map<String, String>> updateDoctor(
-            @RequestBody Doctor doctor,
+            @Valid @RequestBody Doctor doctor,
             @PathVariable String token
     ) {
         ResponseEntity<Map<String, String>> tokenRes = service.validateToken(token, "admin");
         if (!tokenRes.getStatusCode().is2xxSuccessful()) {
-            Map<String, String> err = new HashMap<>();
-            err.put("message", "Unauthorized");
-            return new ResponseEntity<>(err, HttpStatus.UNAUTHORIZED);
+            return tokenRes;
         }
 
         int result = doctorService.updateDoctor(doctor);
@@ -133,9 +110,6 @@ public class DoctorController {
         }
     }
 
-    /**
-     * Delete doctor (admin token required).
-     */
     @DeleteMapping("/{id}/{token}")
     public ResponseEntity<Map<String, String>> deleteDoctor(
             @PathVariable long id,
@@ -143,9 +117,7 @@ public class DoctorController {
     ) {
         ResponseEntity<Map<String, String>> tokenRes = service.validateToken(token, "admin");
         if (!tokenRes.getStatusCode().is2xxSuccessful()) {
-            Map<String, String> err = new HashMap<>();
-            err.put("message", "Unauthorized");
-            return new ResponseEntity<>(err, HttpStatus.UNAUTHORIZED);
+            return tokenRes;
         }
 
         int result = doctorService.deleteDoctor(id);
@@ -163,9 +135,6 @@ public class DoctorController {
         }
     }
 
-    /**
-     * Filter doctors by name, time, and specialty.
-     */
     @GetMapping("/filter/{name}/{time}/{speciality}")
     public Map<String, Object> filterDoctors(
             @PathVariable String name,

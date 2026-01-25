@@ -1,10 +1,10 @@
-package com.project.back_end.controller;
+package com.project.back_end.controllers;
 
-import com.project.back_end.dto.Login;
+import com.project.back_end.DTO.Login;
 import com.project.back_end.models.Patient;
-import com.project.back_end.service.PatientService;
 import com.project.back_end.service.ClinicService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.project.back_end.service.PatientService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,87 +12,64 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * PatientController
- * REST controller for patient operations: signup, login, details, appointments, and filtering.
- */
 @RestController
 @RequestMapping("/patient")
 public class PatientController {
 
-    @Autowired
-    private PatientService patientService;
+    private final PatientService patientService;
+    private final ClinicService service;
 
-    @Autowired
-    private ClinicService service;
+    public PatientController(PatientService patientService, ClinicService service) {
+        this.patientService = patientService;
+        this.service = service;
+    }
 
-    /**
-     * Get patient details using token (patient token required).
-     */
     @GetMapping("/{token}")
-    public ResponseEntity<Map<String, Object>> getPatientDetails(@PathVariable String token) {
+    public ResponseEntity<Map<String, Object>> getPatient(@PathVariable String token) {
         ResponseEntity<Map<String, String>> tokenRes = service.validateToken(token, "patient");
         if (!tokenRes.getStatusCode().is2xxSuccessful()) {
             Map<String, Object> err = new HashMap<>();
-            err.put("message", "Unauthorized");
-            return new ResponseEntity<>(err, HttpStatus.UNAUTHORIZED);
+            err.putAll(tokenRes.getBody() == null ? Map.of("message", "Unauthorized") : tokenRes.getBody());
+            return new ResponseEntity<>(err, tokenRes.getStatusCode());
         }
-
         return patientService.getPatientDetails(token);
     }
 
-    /**
-     * Create a new patient (signup).
-     */
     @PostMapping
-    public ResponseEntity<Map<String, Object>> createPatient(@RequestBody Patient patient) {
-
-        // Keep your existing pre-check (if you want it)
+    public ResponseEntity<Map<String, Object>> createPatient(@Valid @RequestBody Patient patient) {
         boolean okToCreate = service.validatePatient(patient);
         if (!okToCreate) {
             Map<String, Object> res = new HashMap<>();
             res.put("message", "Patient with email id or phone no already exist");
             return new ResponseEntity<>(res, HttpStatus.CONFLICT);
         }
-
-        // IMPORTANT: PatientService.createPatient(...) returns a ResponseEntity, not int
         return patientService.createPatient(patient);
     }
 
-
-    /**
-     * Patient login.
-     */
     @PostMapping("/login")
-    public ResponseEntity<Map<String, String>> patientLogin(@RequestBody Login login) {
+    public ResponseEntity<Map<String, String>> login(@Valid @RequestBody Login login) {
         return service.validatePatientLogin(login);
     }
 
-    /**
-     * Get patient appointments (patient token required).
-     */
-    @GetMapping("/{id}/{token}")
-    public ResponseEntity<Map<String, Object>> getPatientAppointments(
+    @GetMapping("/{id}/{token}/{user}")
+    public ResponseEntity<Map<String, Object>> getPatientAppointment(
             @PathVariable Long id,
-            @PathVariable String token
+            @PathVariable String token,
+            @PathVariable String user
     ) {
-        ResponseEntity<Map<String, String>> tokenRes = service.validateToken(token, "patient");
+        ResponseEntity<Map<String, String>> tokenRes = service.validateToken(token, user);
         if (!tokenRes.getStatusCode().is2xxSuccessful()) {
             Map<String, Object> err = new HashMap<>();
-            err.put("message", "Unauthorized");
-            return new ResponseEntity<>(err, HttpStatus.UNAUTHORIZED);
+            err.putAll(tokenRes.getBody() == null ? Map.of("message", "Unauthorized") : tokenRes.getBody());
+            return new ResponseEntity<>(err, tokenRes.getStatusCode());
         }
-
-        // NOTE: method name must match your PatientService implementation.
-        // If your course template says getPatientAppointment(id, token), use that.
+        // Method name here should match your PatientService implementation.
+        // If your service uses getPatientAppointments(...), keep it; otherwise rename to getPatientAppointment(...)
         return patientService.getPatientAppointments(id, token);
     }
 
-    /**
-     * Filter patient appointments (patient token required).
-     */
     @GetMapping("/filter/{condition}/{name}/{token}")
-    public ResponseEntity<Map<String, Object>> filterPatientAppointments(
+    public ResponseEntity<Map<String, Object>> filterPatientAppointment(
             @PathVariable String condition,
             @PathVariable String name,
             @PathVariable String token
@@ -100,10 +77,9 @@ public class PatientController {
         ResponseEntity<Map<String, String>> tokenRes = service.validateToken(token, "patient");
         if (!tokenRes.getStatusCode().is2xxSuccessful()) {
             Map<String, Object> err = new HashMap<>();
-            err.put("message", "Unauthorized");
-            return new ResponseEntity<>(err, HttpStatus.UNAUTHORIZED);
+            err.putAll(tokenRes.getBody() == null ? Map.of("message", "Unauthorized") : tokenRes.getBody());
+            return new ResponseEntity<>(err, tokenRes.getStatusCode());
         }
-
         return service.filterPatient(condition, name, token);
     }
 }

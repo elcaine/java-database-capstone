@@ -1,6 +1,6 @@
 package com.project.back_end;
 
-import com.project.back_end.repository.PrescriptionRepository;
+import com.project.back_end.repo.PrescriptionRepository;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;

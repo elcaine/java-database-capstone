@@ -1,29 +1,26 @@
-package com.project.back_end.dto;
+package com.project.back_end.DTO;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
-/**
- * AppointmentDTO
- * Data Transfer Object for appointment data exchanged with frontend clients.
- */
 public class AppointmentDTO {
 
     private Long id;
+
     private Long doctorId;
     private String doctorName;
+
     private Long patientId;
     private String patientName;
     private String patientEmail;
     private String patientPhone;
     private String patientAddress;
-    private LocalDateTime appointmentTime;
-    private int status;
 
-    private LocalDate appointmentDate;
-    private LocalTime appointmentTimeOnly;
-    private LocalDateTime endTime;
+    private LocalDateTime appointmentTime;
+
+    // 0 = Scheduled, 1 = Completed
+    private int status;
 
     public AppointmentDTO(
             Long id,
@@ -47,61 +44,33 @@ public class AppointmentDTO {
         this.patientAddress = patientAddress;
         this.appointmentTime = appointmentTime;
         this.status = status;
-
-        this.appointmentDate = appointmentTime.toLocalDate();
-        this.appointmentTimeOnly = appointmentTime.toLocalTime();
-        this.endTime = appointmentTime.plusHours(1);
     }
 
-    public Long getId() {
-        return id;
-    }
+    public Long getId() { return id; }
 
-    public Long getDoctorId() {
-        return doctorId;
-    }
+    public Long getDoctorId() { return doctorId; }
+    public String getDoctorName() { return doctorName; }
 
-    public String getDoctorName() {
-        return doctorName;
-    }
+    public Long getPatientId() { return patientId; }
+    public String getPatientName() { return patientName; }
+    public String getPatientEmail() { return patientEmail; }
+    public String getPatientPhone() { return patientPhone; }
+    public String getPatientAddress() { return patientAddress; }
 
-    public Long getPatientId() {
-        return patientId;
-    }
+    public LocalDateTime getAppointmentTime() { return appointmentTime; }
+    public int getStatus() { return status; }
 
-    public String getPatientName() {
-        return patientName;
-    }
-
-    public String getPatientEmail() {
-        return patientEmail;
-    }
-
-    public String getPatientPhone() {
-        return patientPhone;
-    }
-
-    public String getPatientAddress() {
-        return patientAddress;
-    }
-
-    public LocalDateTime getAppointmentTime() {
-        return appointmentTime;
-    }
-
-    public int getStatus() {
-        return status;
-    }
+    // --- Derived / Custom Getters ---
 
     public LocalDate getAppointmentDate() {
-        return appointmentDate;
+        return appointmentTime == null ? null : appointmentTime.toLocalDate();
     }
 
     public LocalTime getAppointmentTimeOnly() {
-        return appointmentTimeOnly;
+        return appointmentTime == null ? null : appointmentTime.toLocalTime();
     }
 
     public LocalDateTime getEndTime() {
-        return endTime;
+        return appointmentTime == null ? null : appointmentTime.plusHours(1);
     }
 }
