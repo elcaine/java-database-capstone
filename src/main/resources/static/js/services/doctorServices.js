@@ -3,9 +3,9 @@
   Handles API interactions related to doctor management.
 */
 
-import { BASE_API_URL } from "./config.js";
+import { API_BASE_URL } from "./config.js";
 
-const DOCTOR_API = `${BASE_API_URL}/doctor`;
+const DOCTOR_API = `${API_BASE_URL}/doctor`;
 
 /**
  * Fetch all doctors

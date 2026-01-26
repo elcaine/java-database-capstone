@@ -6,17 +6,20 @@
   <title>Select Role</title>
 
   <!-- Favicon -->
-  <link rel="icon" href="../assets/images/logo/Logo.png">
+  <link rel="icon" href="assets/images/logo/Logo.png">
 
   <!-- Styles -->
-  <link rel="stylesheet" href="../assets/css/index.css">
-  <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/index.css">
+  <link rel="stylesheet" href="assets/css/style.css">
 
   <!-- Shared JS -->
-  <script src="../js/util.js" defer></script>
-  <script src="../js/render.js" defer></script>
-  <script src="../js/components/header.js" defer></script>
-  <script src="../js/components/footer.js" defer></script>
+  <script src="js/util.js" defer></script>
+  <script src="js/render.js" defer></script>
+  <script src="js/components/header.js" defer></script>
+  <script src="js/components/footer.js" defer></script>
+
+  <!-- Needed by modals.js: provides loginPatient/signupPatient globals (template expectation) -->
+  <script src="js/services/patientServices.js" defer></script>
 </head>
 
 <body>
@@ -30,9 +33,9 @@
         <h1>Select Your Role</h1>
 
         <div class="role-buttons">
-          <button id="adminBtn">Admin</button>
-          <button id="patientBtn">Patient</button>
-          <button id="doctorBtn">Doctor</button>
+          <button id="adminLogin">Admin</button>
+          <button id="patientLogin">Patient</button>
+          <button id="doctorLogin">Doctor</button>
         </div>
       </main>
 
@@ -41,15 +44,15 @@
     </div>
   </div>
 
-  <!-- Modal (hidden by default) -->
-  <div id="modal-overlay" class="hidden">
-    <div class="modal">
+  <!-- Modal -->
+  <div id="modal" style="display: none;">
+    <div class="modal-content">
       <button id="closeModal">×</button>
-      <div id="modal-content"></div>
+      <div id="modal-body"></div>
     </div>
   </div>
 
   <!-- Page-specific logic -->
-  <script type="module" src="../js/index.js"></script>
+  <script type="module" src="js/services/index.js"></script>
 </body>
 </html>

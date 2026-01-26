@@ -3,15 +3,16 @@
   Handles role selection and login logic for the landing page.
 */
 
-import { openModal } from "./util.js";
-import { BASE_API_URL } from "./config.js";
+import { openModal } from "../components/modals.js";
+import { API_BASE_URL } from "../config/config.js";
 
-const ADMIN_API = `${BASE_API_URL}/admin/login`;
-const DOCTOR_API = `${BASE_API_URL}/doctor/login`;
+const ADMIN_API = `${API_BASE_URL}/admin/login`;
+const DOCTOR_API = `${API_BASE_URL}/doctor/login`;
 
 window.onload = () => {
   const adminLoginBtn = document.getElementById("adminLogin");
   const doctorLoginBtn = document.getElementById("doctorLogin");
+  const patientLoginBtn = document.getElementById("patientLogin");
 
   if (adminLoginBtn) {
     adminLoginBtn.addEventListener("click", () => openModal("adminLogin"));
@@ -20,11 +21,17 @@ window.onload = () => {
   if (doctorLoginBtn) {
     doctorLoginBtn.addEventListener("click", () => openModal("doctorLogin"));
   }
+
+  // Supported by modals.js in the template; harmless if button doesn't exist
+  if (patientLoginBtn) {
+    patientLoginBtn.addEventListener("click", () => openModal("patientLogin"));
+  }
 };
 
 window.adminLoginHandler = async function () {
-  const username = document.getElementById("adminUsername")?.value;
-  const password = document.getElementById("adminPassword")?.value;
+  // modals.js uses id="username" and id="password" for admin login
+  const username = document.getElementById("username")?.value;
+  const password = document.getElementById("password")?.value;
 
   if (!username || !password) {
     alert("Please enter username and password.");
@@ -48,15 +55,21 @@ window.adminLoginHandler = async function () {
     const data = await response.json();
     localStorage.setItem("token", data.token);
     localStorage.setItem("userRole", "admin");
-    selectRole("admin");
+
+    // selectRole is typically defined elsewhere in the template JS
+    if (typeof window.selectRole === "function") {
+      window.selectRole("admin");
+    }
   } catch (err) {
+    console.error(err);
     alert("Unable to log in. Please try again later.");
   }
 };
 
 window.doctorLoginHandler = async function () {
-  const email = document.getElementById("doctorEmail")?.value;
-  const password = document.getElementById("doctorPassword")?.value;
+  // modals.js uses id="email" and id="password" for doctor login
+  const email = document.getElementById("email")?.value;
+  const password = document.getElementById("password")?.value;
 
   if (!email || !password) {
     alert("Please enter email and password.");
@@ -80,7 +93,10 @@ window.doctorLoginHandler = async function () {
     const data = await response.json();
     localStorage.setItem("token", data.token);
     localStorage.setItem("userRole", "doctor");
-    selectRole("doctor");
+
+    if (typeof window.selectRole === "function") {
+      window.selectRole("doctor");
+    }
   } catch (err) {
     console.error(err);
     alert("Unable to log in. Please try again later.");
