@@ -10,7 +10,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
-
+import jakarta.persistence.FetchType;
 import java.util.List;
 
 @Entity
@@ -41,7 +41,8 @@ public class Doctor {
     @Pattern(regexp = "^[0-9]{10}$")
     private String phone;
 
-    @ElementCollection
+    // @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     private List<String> availableTimes;
 
     public Doctor() {}

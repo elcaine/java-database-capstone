@@ -7,6 +7,7 @@ import { openBookingOverlay } from "./loggedPatient.js";
 import { deleteDoctor } from "./doctorServices.js";
 import { fetchPatientDetails } from "./patientServices.js";
 
+
 export function createDoctorCard(doctor) {
   const card = document.createElement("div");
   card.classList.add("doctor-card");
